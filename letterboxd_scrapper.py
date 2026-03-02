@@ -41,7 +41,7 @@ def find_titles(user: str):# 1. Find ONE element with any data-item-name value
     return elements_titles
 
 def separate_in_title_year(titlesAndYears: str):
-    
+
     titles = []
     years = []
 
@@ -58,30 +58,33 @@ def print_title_list(titles: list):
     print('\n')
 
 if __name__ == "__main__":
-    date = time.strftime("%Y-%m-%d-%H-%M-%S", time.gmtime())
-    if len(sys.argv) > 1:
-        argv = sys.argv[1:]
-        for arg in argv:
-            user = arg
-            try:
-                titlesAndYears = find_titles(user)
-                if len(titlesAndYears) == 0:
-                    print("\nNo titles found for user", user)
-                else:
-                    print("\nTitles found for user", user)
-                    print_title_list(titlesAndYears)
-
-                    titles, years = separate_in_title_year(titlesAndYears)
-                    df = pd.DataFrame(titles, columns=['Name'])
-                    df['Year'] = years
-
-                    # On utc
-                    nameToStore = f"watchlist-{user}-{date}-utc.csv"
-
-                    df.to_csv(nameToStore, index=False)
-
-                    print(f'Stored on {nameToStore}')
-            except :
-                print(f'User {user} does not exist')
+    if "-h" in sys.argv[1:] or "--help" in sys.argv[1:]:
+        print("Usage: python letterboxd_scrapper.py <username> <username2> <username3> ...")
     else:
-        print("Please provide a username or a list of username separated by a space")
+        date = time.strftime("%Y-%m-%d-%H-%M-%S", time.gmtime())
+        if len(sys.argv) > 1:
+            argv = sys.argv[1:]
+            for arg in argv:
+                user = arg
+                try:
+                    titlesAndYears = find_titles(user)
+                    if len(titlesAndYears) == 0:
+                        print("\nNo titles found for user", user)
+                    else:
+                        print("\nTitles found for user", user)
+                        print_title_list(titlesAndYears)
+
+                        titles, years = separate_in_title_year(titlesAndYears)
+                        df = pd.DataFrame(titles, columns=['Name'])
+                        df['Year'] = years
+
+                        # On utc
+                        nameToStore = f"watchlist-{user}-{date}-utc.csv"
+
+                        df.to_csv(nameToStore, index=False)
+
+                        print(f'Stored on {nameToStore}')
+                except :
+                    print(f'User {user} does not exist')
+        else:
+            print("Please provide a username or a list of username separated by a space")
