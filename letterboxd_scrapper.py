@@ -20,12 +20,14 @@ def find_titles(user: str):# 1. Find ONE element with any data-item-name value
     iteration = 0
     elements_titles = []
 
+
     while not blankPage:
         elements = []
         if iteration == 0:
             url = 'https://letterboxd.com/'+user+'/watchlist/'
         else:
             url = 'https://letterboxd.com/'+user+'/watchlist/page/'+str(iteration+1)+'/'
+
         html = fetch_html(url)
         soup = BeautifulSoup(html, "html.parser")
         elements = soup.find_all(attrs={"data-item-name": True})
@@ -35,6 +37,7 @@ def find_titles(user: str):# 1. Find ONE element with any data-item-name value
         iteration += 1
         if len(elements) == 0:
             blankPage = True
+            print('Stopping on page number ', iteration,' because there are no more elements', url)
         else:
             print('Reviewed page number ', iteration)
 
@@ -57,6 +60,23 @@ def print_title_list(titles: list):
         print(title)
     print('\n')
 
+def retrive_watchlist_from_user(user: str):
+    try:
+        titlesAndYears = find_titles(user)
+        if len(titlesAndYears) == 0:
+            print("\nNo titles found for user", user)
+        else:
+            print("\nTitles found for user", user)
+            print_title_list(titlesAndYears)
+
+            titles, years = separate_in_title_year(titlesAndYears)
+            d = pd.DataFrame(titles, columns=['Name'])
+            d['Year'] = years
+            
+            return d
+    except :
+        print(f'User {user} does not exist')
+
 if __name__ == "__main__":
     if "-h" in sys.argv[1:] or "--help" in sys.argv[1:]:
         print("Usage: python letterboxd_scrapper.py <username> <username2> <username3> ...")
@@ -66,25 +86,17 @@ if __name__ == "__main__":
             argv = sys.argv[1:]
             for arg in argv:
                 user = arg
+
                 try:
-                    titlesAndYears = find_titles(user)
-                    if len(titlesAndYears) == 0:
-                        print("\nNo titles found for user", user)
-                    else:
-                        print("\nTitles found for user", user)
-                        print_title_list(titlesAndYears)
+                    df = retrive_watchlist_from_user(user)
+                    # On utc
+                    nameToStore = f"watchlist-{user}-{date}-utc.csv"
 
-                        titles, years = separate_in_title_year(titlesAndYears)
-                        df = pd.DataFrame(titles, columns=['Name'])
-                        df['Year'] = years
+                    df.to_csv(nameToStore, index=False)
 
-                        # On utc
-                        nameToStore = f"watchlist-{user}-{date}-utc.csv"
-
-                        df.to_csv(nameToStore, index=False)
-
-                        print(f'Stored on {nameToStore}')
-                except :
-                    print(f'User {user} does not exist')
+                    print(f'Stored on {nameToStore}')
+                except:
+                    # Nothing but dont fail
+                    pass
         else:
             print("Please provide a username or a list of username separated by a space")
