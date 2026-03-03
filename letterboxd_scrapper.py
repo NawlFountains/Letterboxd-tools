@@ -37,7 +37,6 @@ def find_titles(user: str):# 1. Find ONE element with any data-item-name value
         iteration += 1
         if len(elements) == 0:
             blankPage = True
-            print('Stopping on page number ', iteration,' because there are no more elements', url)
         else:
             print('Reviewed page number ', iteration)
 
@@ -50,11 +49,17 @@ def separate_in_title_year(titlesAndYears: str):
 
     for titleAndYear in titlesAndYears:
         titles.append(titleAndYear.split('(')[0])
-        years.append(titleAndYear.split('(')[1].split(')')[0])
+
+        # Some movies may not have a year
+        if len(titleAndYear.split('(')) == 1:
+            years.append('')
+        else:
+            years.append(titleAndYear.split('(')[1].split(')')[0])
 
     return titles, years
 
 def print_title_list(titles: list):
+    
     print('\nWatchlist:\n')
     for title in titles:
         print(title)
@@ -65,9 +70,9 @@ def retrive_watchlist_from_user(user: str):
         titlesAndYears = find_titles(user)
         if len(titlesAndYears) == 0:
             print("\nNo titles found for user", user)
+            return pd.DataFrame( columns=['Name', 'Year'])
         else:
             print("\nTitles found for user", user)
-            print_title_list(titlesAndYears)
 
             titles, years = separate_in_title_year(titlesAndYears)
             d = pd.DataFrame(titles, columns=['Name'])
@@ -89,6 +94,8 @@ if __name__ == "__main__":
 
                 try:
                     df = retrive_watchlist_from_user(user)
+                    print_title_list(df['Name'])
+
                     # On utc
                     nameToStore = f"watchlist-{user}-{date}-utc.csv"
 
