@@ -8,8 +8,8 @@ HELP_MESSAGE = "USAGE: \n    " \
 def intersect_watchlists(watchlists):
     print("Intersecting watchlists...")
     intersected_watchlist = watchlists[0]
-    for i in range(2, len(watchlists)):
-        intersected_watchlist = intersected_watchlist.merge(watchlists[i], how='inner', on=['Name', 'Year'])
+    for i in range(1, len(watchlists)):
+        intersected_watchlist = intersected_watchlist.merge(watchlists[i], how='inner', on=['Name','Year'])
     print("Intersected watchlists:")
     return intersected_watchlist
 
