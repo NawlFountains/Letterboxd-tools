@@ -1,2 +1,6 @@
 *.csv
 /pycache/*
+watchlists/
+intersected_watchlist/
+venv/
+__pycache__

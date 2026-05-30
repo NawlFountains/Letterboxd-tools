@@ -1,10 +1,9 @@
 import pandas as pd
 import sys
+import os
+import argparse
 import letterboxd_scrapper as scrapper
 
-HELP_MESSAGE = "USAGE: \n    " \
-        "python watchlist_intersecter.py [-i <watchlist1.csv> <watchlist2.csv> <watchlist3.csv> ... |\n                                 "\
-        "       <user1> <user2> <user3> ... | -h]"
 def intersect_watchlists(watchlists):
     print("Intersecting watchlists...")
     intersected_watchlist = watchlists[0]
@@ -22,24 +21,20 @@ def print_watchlist(watchlist):
         print(row['Name'], row['Year'])
 
 if __name__ == "__main__":
-    if "-h" in sys.argv[1:] or "--help" in sys.argv[1:]:
-        print(HELP_MESSAGE)
-    elif "-i" in sys.argv[1:] or "--input" in sys.argv[1:]:
-        if len(sys.argv) > 2:
-            argv = sys.argv[2:]
-            watchlists = []
-            for arg in argv:
-                csv_path = arg
-                watchlists.append(pd.read_csv(csv_path))
-            print_watchlist(intersect_watchlists(watchlists))
-        else:
-            print(HELP_MESSAGE)
-    else:
-        if len(sys.argv) > 1:
-            argv = sys.argv[1:]
-            watchlists = []
-            for user in argv:
-                watchlists.append(scrapper.retrive_watchlist_from_user(user))
-            print_watchlist(intersect_watchlists(watchlists))
-        else:
-            print(HELP_MESSAGE)
+    parser = argparse.ArgumentParser(description="Intersect the watchlist from letterboxd users")
+    parser.add_argument('users', help='Username of one or more users', nargs='+')
+    args = parser.parse_args()
+    watchlists = []
+
+    output_dir = f"intersected_watchlist"
+    os.makedirs(output_dir, exist_ok=True)
+
+    for user in args.users:
+        watchlists.append(scrapper.retrive_watchlist_from_user(user))
+    
+    nameToStore = f"{output_dir}/intersected_watchlist{args.users}.csv"
+    df = intersect_watchlists(watchlists)
+    df.to_csv(nameToStore, index=False)
+    print_watchlist(df)
+    print(f'Saved to {nameToStore}')
+

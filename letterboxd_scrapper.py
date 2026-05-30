@@ -1,7 +1,9 @@
 import urllib.request
+import argparse
 import pandas as pd
 import sys
 import time
+import os
 from bs4 import BeautifulSoup
 
 
@@ -83,27 +85,26 @@ def retrive_watchlist_from_user(user: str):
         print(f'User {user} does not exist')
 
 if __name__ == "__main__":
-    if "-h" in sys.argv[1:] or "--help" in sys.argv[1:]:
-        print("Usage: python letterboxd_scrapper.py <username> <username2> <username3> ...")
-    else:
-        date = time.strftime("%Y-%m-%d-%H-%M-%S", time.gmtime())
-        if len(sys.argv) > 1:
-            argv = sys.argv[1:]
-            for arg in argv:
-                user = arg
+    parser = argparse.ArgumentParser(description="Retrieve watchlist from letterboxd username")
+    parser.add_argument('users', help='Username of one or more users', nargs='+')
+    date = time.strftime("%Y-%m-%d-%H-%M-%S", time.gmtime())
+    args = parser.parse_args()
 
-                try:
-                    df = retrive_watchlist_from_user(user)
-                    print_title_list(df['Name'])
+    output_dir = f"watchlists"
+    os.makedirs(output_dir, exist_ok=True)
 
-                    # On utc
-                    nameToStore = f"watchlist-{user}-{date}-utc.csv"
+    for user in args.users:
+        try:
+            df = retrive_watchlist_from_user(user)
+            print_title_list(df['Name'])
 
-                    df.to_csv(nameToStore, index=False)
+            # On utc
+            nameToStore = f"{output_dir}/watchlist-{user}-{date}-utc.csv"
 
-                    print(f'Stored on {nameToStore}')
-                except:
-                    # Nothing but dont fail
-                    pass
-        else:
-            print("Please provide a username or a list of username separated by a space")
+            df.to_csv(nameToStore, index=False)
+
+            print(f'Stored on {nameToStore}')
+        except:
+            # Nothing but dont fail
+            print(f"Username {user} doesn't exist")
+            pass
