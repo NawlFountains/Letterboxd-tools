@@ -2,7 +2,7 @@ import pandas as pd
 import sys
 import os
 import argparse
-import letterboxd_scrapper as scrapper
+import letterboxd_scraper as scraper
 
 def intersect_watchlists(watchlists):
     print("Intersecting watchlists...")
@@ -30,7 +30,7 @@ if __name__ == "__main__":
     os.makedirs(output_dir, exist_ok=True)
 
     for user in args.users:
-        watchlists.append(scrapper.retrive_watchlist_from_user(user))
+        watchlists.append(scraper.retrive_watchlist_from_user(user))
     
     nameToStore = f"{output_dir}/intersected_watchlist{args.users}.csv"
     df = intersect_watchlists(watchlists)
